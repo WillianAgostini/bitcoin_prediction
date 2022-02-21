@@ -1,0 +1,8 @@
+numba
+keras
+matplotlib
+numpy
+pandas
+scikit_learn
+mplfinance
+seaborn
