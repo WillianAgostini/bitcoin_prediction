@@ -5,24 +5,35 @@ from matplotlib import ticker
 
 
 def getFirstTimestamp(data):
-    return datetime.fromtimestamp(data["Timestamp"][:1]).strftime("%d/%m/%Y %H:%M:%S")
+    if 'Timestamp' in data.columns:
+        return datetime.fromtimestamp(data["Timestamp"][:1]).strftime("%d/%m/%Y %H:%M:%S")
+    return datetime.fromtimestamp(data.index[:1][0]).strftime("%d/%m/%Y %H:%M:%S")
 
 
 def getLastTimestamp(data):
-    return datetime.fromtimestamp(data["Timestamp"][-1:]).strftime("%d/%m/%Y %H:%M:%S")
+    if 'Timestamp' in data.columns:
+        return datetime.fromtimestamp(data["Timestamp"][-1:]).strftime("%d/%m/%Y %H:%M:%S")
+    return datetime.fromtimestamp(data.index[-1:][0]).strftime("%d/%m/%Y %H:%M:%S")
 
 
-def filterByInterval(coinbase, relativedelta):
+def filterByInterval(coinbase, relativeDelta, relativeDeltaSubtract=None):
     """
     Filter data by interval
     example: relativedelta => years=0, days=30
     """
 
-    lastTimestamp = coinbase["Timestamp"][-1:]
-    interval = (datetime.fromtimestamp(lastTimestamp) -
-                relativedelta).timestamp()
+    lastTimestamp = coinbase["Timestamp"][-1:].values[0]
+    endTimestampToFilter = lastTimestamp
+    if relativeDeltaSubtract is not None:
+        lastTimestamp = (datetime.fromtimestamp(
+            lastTimestamp) - relativeDeltaSubtract).timestamp()
+        endTimestampToFilter = lastTimestamp
 
-    return coinbase[coinbase["Timestamp"] >= interval]
+    interval = (datetime.fromtimestamp(lastTimestamp) -
+                relativeDelta).timestamp()
+
+    values = coinbase[coinbase["Timestamp"] >= interval]
+    return values[values["Timestamp"] <= endTimestampToFilter]
 
 
 def hasMissingData(timestampList):
