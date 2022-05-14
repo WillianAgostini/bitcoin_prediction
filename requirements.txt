@@ -6,3 +6,4 @@ pandas
 scikit_learn
 mplfinance
 seaborn
+statsmodels

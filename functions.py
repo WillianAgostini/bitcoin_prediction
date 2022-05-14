@@ -5,14 +5,22 @@ from matplotlib import ticker
 
 
 def getFirstTimestamp(data):
+    if 'dateHour' in data.columns:
+        return data["dateHour"][:1]
+
     if 'Timestamp' in data.columns:
         return datetime.fromtimestamp(data["Timestamp"][:1]).strftime("%d/%m/%Y %H:%M:%S")
+
     return datetime.fromtimestamp(data.index[:1][0]).strftime("%d/%m/%Y %H:%M:%S")
 
 
 def getLastTimestamp(data):
+    if 'dateHour' in data.columns:
+        return data["dateHour"][-1:]
+
     if 'Timestamp' in data.columns:
         return datetime.fromtimestamp(data["Timestamp"][-1:]).strftime("%d/%m/%Y %H:%M:%S")
+
     return datetime.fromtimestamp(data.index[-1:][0]).strftime("%d/%m/%Y %H:%M:%S")
 
 
