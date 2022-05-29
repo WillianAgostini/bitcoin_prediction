@@ -9,7 +9,8 @@ def getFirstTimestamp(data):
         return data["dateHour"][:1]
 
     if 'Timestamp' in data.columns:
-        return datetime.fromtimestamp(data["Timestamp"][:1]).strftime("%d/%m/%Y %H:%M:%S")
+        timestamp = data["Timestamp"][:1].values[0]
+        return datetime.fromtimestamp(timestamp).strftime("%d/%m/%Y %H:%M:%S")
 
     return datetime.fromtimestamp(data.index[:1][0]).strftime("%d/%m/%Y %H:%M:%S")
 
@@ -19,7 +20,8 @@ def getLastTimestamp(data):
         return data["dateHour"][-1:]
 
     if 'Timestamp' in data.columns:
-        return datetime.fromtimestamp(data["Timestamp"][-1:]).strftime("%d/%m/%Y %H:%M:%S")
+        timestamp = data["Timestamp"][-1:].values[0]
+        return datetime.fromtimestamp(timestamp).strftime("%d/%m/%Y %H:%M:%S")
 
     return datetime.fromtimestamp(data.index[-1:][0]).strftime("%d/%m/%Y %H:%M:%S")
 
