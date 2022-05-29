@@ -2,6 +2,7 @@ from datetime import datetime
 import matplotlib.pyplot as plt  # data visualization
 import numpy as np  # linear algebra
 from matplotlib import ticker
+import pandas as pd  # data processing, CSV file I/O (e.g. pd.read_csv)
 
 
 def getFirstTimestamp(data):
@@ -153,3 +154,28 @@ def hasMissingData(timestampList):
         print(i)
 
     return True
+
+
+def groupTimestampBy(data, format):
+    """
+    Agrupa colula Timestamp através do formato passado.
+
+    Parameters:
+        data: Lista de valores timestamp -> list
+        format: Lista de valores timestamp -> string
+
+    Return:
+        data
+    """
+    historical = data.dropna().reset_index(drop=True)
+    historical.Timestamp = pd.to_datetime(historical.Timestamp, unit='s')
+    historical['dateFormated'] = historical.Timestamp.dt.strftime(format)
+    return historical.groupby(historical.dateFormated).mean()
+
+
+def groupByHour(data):
+    return groupTimestampBy(data, '%Y-%m-%d %H')
+
+
+def groupByDay(data):
+    return groupTimestampBy(data, '%Y-%m-%d')
