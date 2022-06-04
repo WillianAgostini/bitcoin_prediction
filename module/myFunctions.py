@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt  # data visualization
 import numpy as np  # linear algebra
 from matplotlib import ticker
 import pandas as pd  # data processing, CSV file I/O (e.g. pd.read_csv)
+from sklearn.preprocessing import MinMaxScaler
 
 
 def getFirstTimestamp(data):
@@ -27,7 +28,7 @@ def getLastTimestamp(data):
     return datetime.fromtimestamp(data.index[-1:][0]).strftime("%d/%m/%Y %H:%M:%S")
 
 
-def filterByInterval(coinbase, relativeDelta, relativeDeltaSubtract=None):
+def filterByInterval(coinbase, relativeDelta):
     """
     Filter data by interval
     example: relativedelta => years=0, days=30
@@ -35,16 +36,68 @@ def filterByInterval(coinbase, relativeDelta, relativeDeltaSubtract=None):
 
     lastTimestamp = coinbase["Timestamp"][-1:].values[0]
     endTimestampToFilter = lastTimestamp
-    if relativeDeltaSubtract is not None:
-        lastTimestamp = (datetime.fromtimestamp(
-            lastTimestamp) - relativeDeltaSubtract).timestamp()
-        endTimestampToFilter = lastTimestamp
 
     interval = (datetime.fromtimestamp(lastTimestamp) -
                 relativeDelta).timestamp()
 
-    values = coinbase[coinbase["Timestamp"] >= interval]
+    values = coinbase[coinbase["Timestamp"] > interval]
     return values[values["Timestamp"] <= endTimestampToFilter]
+
+
+def separateTrainTest(data, relativeDeltaSubtract):
+    """
+    Filter filtered by interval
+    relativeDeltaSubtract: Subtrai um intervalo de data para filtrar os dados
+    restante dos dados retorna como dados para treinameto
+    example: relativeDeltaSubtract => years=0, days=30
+    """
+    lastTimestamp = data["Timestamp"][-1:].values[0]
+
+    startTimestampToDataTest = (datetime.fromtimestamp(
+        lastTimestamp) - relativeDeltaSubtract).timestamp()
+
+    test = data.loc[data["Timestamp"] > startTimestampToDataTest].copy()
+    train = data.loc[data["Timestamp"] <= startTimestampToDataTest].copy()
+
+    test = test['Close'].values.reshape(-1, 1)
+    train = train['Close'].values.reshape(-1, 1)
+
+    return train, test
+
+
+def scaller(df):
+    scaler = MinMaxScaler(feature_range=(0, 1))
+    scaled = scaler.fit_transform(df)
+    return scaled
+
+
+def create_dataset(df, look_back=1):
+    scaled = scaller(df)
+    dataX, dataY = [], []
+    for i in range(len(scaled) - look_back):
+        a = scaled[i:(i + look_back), 0]
+        dataX.append(a)
+        dataY.append(scaled[i + look_back, 0])
+    
+    X = np.array(dataX)
+    X = np.reshape(X, (X.shape[0], 1, X.shape[1]))
+    Y = np.array(dataY)
+    return X, Y
+
+def create_dataset2(training_set):
+    training_set = np.reshape(training_set, (len(training_set), 1))
+    sc = MinMaxScaler()
+    training_set = sc.fit_transform(training_set)
+    X = training_set[0:len(training_set)-1]
+    Y = training_set[1:len(training_set)]
+    X = np.reshape(X, (len(X), 1, 1))
+    return X, Y
+
+
+def dropColumns(data, expectedColumns):
+    for column in data.columns:
+        if column not in expectedColumns:
+            data.drop(column, axis=1, inplace=True)
 
 
 def hasMissingData(timestampList):
@@ -168,9 +221,15 @@ def groupTimestampBy(data, format):
         data
     """
     historical = data.dropna().reset_index(drop=True)
-    historical.Timestamp = pd.to_datetime(historical.Timestamp, unit='s')
-    historical['dateFormated'] = historical.Timestamp.dt.strftime(format)
+    historical.TimestampFormated = pd.to_datetime(
+        historical.Timestamp, unit='s')
+    historical['dateFormated'] = historical.TimestampFormated.dt.strftime(
+        format)
     return historical.groupby(historical.dateFormated).mean()
+
+
+def groupByMinute(data):
+    return groupTimestampBy(data, '%Y-%m-%d %H:MM')
 
 
 def groupByHour(data):
