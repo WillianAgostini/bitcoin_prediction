@@ -9,3 +9,4 @@ seaborn
 statsmodels
 plotly
 nbformat>=4.2.0
+tensorflow-gpu
