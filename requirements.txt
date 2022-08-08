@@ -9,4 +9,6 @@ seaborn
 statsmodels
 plotly
 nbformat>=4.2.0
+hashlib
+zipfile36
 tensorflow-gpu
