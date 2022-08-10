@@ -8,7 +8,8 @@ mplfinance
 seaborn
 statsmodels
 plotly
-nbformat>=4.2.0
+nbformat
 hashlib
 zipfile36
 tensorflow-gpu
+pydot
