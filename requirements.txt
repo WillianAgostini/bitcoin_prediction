@@ -13,3 +13,5 @@ hashlib
 zipfile36
 tensorflow-gpu
 pydot
+pandas-bokeh
+
